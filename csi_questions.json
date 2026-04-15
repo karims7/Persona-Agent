@@ -1,0 +1,101 @@
+{
+  "description": "Communication Style Inventory (CSI) items. 10 items per dimension, 6 dimensions = 60 items total. reverse=true means the raw score (1-5) must be reversed: reversed = 6 - raw.",
+  "dimensions": {
+    "Expressiveness": {
+      "description": "Degree to which a person openly and directly expresses themselves, shares opinions freely, and communicates in an animated, enthusiastic manner.",
+      "hexaco_pair": "Extraversion",
+      "items": [
+        {"id": "EX1", "text": "I am very open and direct in expressing myself.", "reverse": false},
+        {"id": "EX2", "text": "I use a lot of expressive language when I communicate.", "reverse": false},
+        {"id": "EX3", "text": "I tend to speak in an animated and enthusiastic way.", "reverse": false},
+        {"id": "EX4", "text": "People describe me as very expressive in how I communicate.", "reverse": false},
+        {"id": "EX5", "text": "I share my opinions freely in conversation.", "reverse": false},
+        {"id": "EX6", "text": "I am comfortable talking about my personal experiences.", "reverse": false},
+        {"id": "EX7", "text": "I tend to be reserved and quiet in social situations.", "reverse": true},
+        {"id": "EX8", "text": "I speak up and make myself heard when I have something to say.", "reverse": false},
+        {"id": "EX9", "text": "I am good at expressing my ideas clearly and vividly.", "reverse": false},
+        {"id": "EX10", "text": "I rarely volunteer information about myself in conversation.", "reverse": true}
+      ]
+    },
+    "Preciseness": {
+      "description": "Degree to which a person is accurate, thorough, organized, and careful in their use of language and presentation of information.",
+      "hexaco_pair": "Conscientiousness",
+      "items": [
+        {"id": "PR1", "text": "I am very precise in my use of language when communicating.", "reverse": false},
+        {"id": "PR2", "text": "I pay careful attention to how I word my messages and statements.", "reverse": false},
+        {"id": "PR3", "text": "I tend to be thorough and detailed when explaining things to others.", "reverse": false},
+        {"id": "PR4", "text": "I often check to make sure I have been understood correctly.", "reverse": false},
+        {"id": "PR5", "text": "I prefer to be organized and systematic in how I communicate.", "reverse": false},
+        {"id": "PR6", "text": "I am careful to use exactly the right words to convey my intended meaning.", "reverse": false},
+        {"id": "PR7", "text": "I tend to ramble and go off-topic when I speak.", "reverse": true},
+        {"id": "PR8", "text": "I take time to structure my thoughts carefully before speaking.", "reverse": false},
+        {"id": "PR9", "text": "I am methodical and orderly in how I present information.", "reverse": false},
+        {"id": "PR10", "text": "I like to be clear and well-structured when communicating.", "reverse": false}
+      ]
+    },
+    "Verbal Aggressiveness": {
+      "description": "Degree to which a person is forceful, confrontational, blunt, or argumentative in communication. Note: high Agreeableness correlates with LOW verbal aggressiveness.",
+      "hexaco_pair": "Agreeableness",
+      "items": [
+        {"id": "VA1", "text": "I often challenge and contradict others' opinions in conversation.", "reverse": false},
+        {"id": "VA2", "text": "I can be blunt and forceful in my communication.", "reverse": false},
+        {"id": "VA3", "text": "People have told me that I come across as argumentative.", "reverse": false},
+        {"id": "VA4", "text": "I find it easy to contradict or correct what other people say.", "reverse": false},
+        {"id": "VA5", "text": "I tend to be forceful and persistent when defending my views.", "reverse": false},
+        {"id": "VA6", "text": "I can be verbally aggressive when someone strongly disagrees with me.", "reverse": false},
+        {"id": "VA7", "text": "I make a conscious effort to avoid conflict and confrontation in conversations.", "reverse": true},
+        {"id": "VA8", "text": "I rarely raise my voice or use harsh language in disagreements.", "reverse": true},
+        {"id": "VA9", "text": "I can be harsh and direct in my criticism of others.", "reverse": false},
+        {"id": "VA10", "text": "I am willing to be confrontational and aggressive to get my point across.", "reverse": false}
+      ]
+    },
+    "Questioningness": {
+      "description": "Degree to which a person tends to question ideas, probe for information, challenge assumptions, and seek deeper understanding in communication.",
+      "hexaco_pair": "Openness to Experience",
+      "items": [
+        {"id": "QU1", "text": "I frequently ask probing questions to get more information in conversation.", "reverse": false},
+        {"id": "QU2", "text": "I like to question ideas and claims that I encounter.", "reverse": false},
+        {"id": "QU3", "text": "I often seek deeper understanding by asking follow-up questions.", "reverse": false},
+        {"id": "QU4", "text": "I enjoy exploring different perspectives on an issue through questioning.", "reverse": false},
+        {"id": "QU5", "text": "I tend to question underlying assumptions when communicating.", "reverse": false},
+        {"id": "QU6", "text": "I ask many 'why' questions to understand the reasons behind things.", "reverse": false},
+        {"id": "QU7", "text": "I tend to accept information at face value without asking further questions.", "reverse": true},
+        {"id": "QU8", "text": "I am curious about the reasoning behind people's statements and opinions.", "reverse": false},
+        {"id": "QU9", "text": "I often challenge the underlying logic or assumptions of ideas I encounter.", "reverse": false},
+        {"id": "QU10", "text": "I rarely ask for more information or elaboration when conversing.", "reverse": true}
+      ]
+    },
+    "Emotionality": {
+      "description": "Degree to which a person expresses emotions openly in communication, responds with empathy, and allows feelings to shape their communicative behavior.",
+      "hexaco_pair": "Emotionality",
+      "items": [
+        {"id": "EM1", "text": "I communicate my emotional reactions openly when talking with others.", "reverse": false},
+        {"id": "EM2", "text": "I often express how I am feeling emotionally during conversations.", "reverse": false},
+        {"id": "EM3", "text": "Emotions play a big role in how I communicate with others.", "reverse": false},
+        {"id": "EM4", "text": "I am comfortable discussing emotional topics with others.", "reverse": false},
+        {"id": "EM5", "text": "I respond to others' emotions with empathy and understanding.", "reverse": false},
+        {"id": "EM6", "text": "I find it easy to express my feelings in words.", "reverse": false},
+        {"id": "EM7", "text": "I tend to keep my emotions to myself and avoid showing them.", "reverse": true},
+        {"id": "EM8", "text": "I am sensitive and responsive to others' emotional states.", "reverse": false},
+        {"id": "EM9", "text": "I can be moved to tears or strong emotion by stories or situations.", "reverse": false},
+        {"id": "EM10", "text": "I prefer to keep communication focused on facts rather than feelings.", "reverse": true}
+      ]
+    },
+    "Impression Manipulativeness": {
+      "description": "Degree to which a person strategically manages how others perceive them, uses flattery, adapts communication style to create favorable impressions. Note: high Honesty-Humility correlates with LOW impression manipulativeness.",
+      "hexaco_pair": "Honesty-Humility",
+      "items": [
+        {"id": "IM1", "text": "I carefully manage and control how others perceive me.", "reverse": false},
+        {"id": "IM2", "text": "I tend to present myself differently depending on who I am talking to.", "reverse": false},
+        {"id": "IM3", "text": "I am skilled at creating favorable impressions of myself.", "reverse": false},
+        {"id": "IM4", "text": "I sometimes tell people what they want to hear rather than the truth.", "reverse": false},
+        {"id": "IM5", "text": "I use communication strategically to influence others' opinions of me.", "reverse": false},
+        {"id": "IM6", "text": "I adjust my communication style specifically to make others like me.", "reverse": false},
+        {"id": "IM7", "text": "I am straightforward and honest and do not try to manage my image.", "reverse": true},
+        {"id": "IM8", "text": "I know exactly how to come across well in different social situations.", "reverse": false},
+        {"id": "IM9", "text": "I use flattery or compliments when it benefits me.", "reverse": false},
+        {"id": "IM10", "text": "I rarely try to influence or manage others' perceptions of me.", "reverse": true}
+      ]
+    }
+  }
+}

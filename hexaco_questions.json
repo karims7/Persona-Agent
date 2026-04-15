@@ -1,0 +1,95 @@
+{
+  "description": "HEXACO-60 personality inventory items. 10 items per dimension, 6 dimensions = 60 items total. reverse=true means the raw score (1-5) must be reversed: reversed = 6 - raw.",
+  "dimensions": {
+    "Honesty-Humility": {
+      "description": "Measures sincerity, fairness, greed-avoidance, and modesty. High scorers are sincere, honest, faithful, and uninterested in social status or material gain.",
+      "items": [
+        {"id": "H1", "text": "If I want something from a person I dislike, I will act very nicely toward that person in order to get it.", "reverse": true},
+        {"id": "H2", "text": "Having a lot of money is not especially important to me.", "reverse": false},
+        {"id": "H3", "text": "I wouldn't use flattery to get a raise or promotion at work, even if I thought it would be effective.", "reverse": false},
+        {"id": "H4", "text": "If I could get anything I wanted by deceiving others, I would do so.", "reverse": true},
+        {"id": "H5", "text": "I would never accept a bribe, even if it were very large.", "reverse": false},
+        {"id": "H6", "text": "I am an ordinary person who is no better than others.", "reverse": false},
+        {"id": "H7", "text": "I would be tempted to use counterfeit money, if I were confident I wouldn't get caught.", "reverse": true},
+        {"id": "H8", "text": "I think that I am entitled to more respect than the average person is.", "reverse": true},
+        {"id": "H9", "text": "I would like to live in a very expensive, high-class neighborhood.", "reverse": true},
+        {"id": "H10", "text": "I would never take things that don't belong to me, even if I were sure I would never get caught.", "reverse": false}
+      ]
+    },
+    "Emotionality": {
+      "description": "Measures fearfulness, anxiety, dependence, and sentimentality. High scorers feel strong emotional bonds, fear physical danger, and need emotional support.",
+      "items": [
+        {"id": "E1", "text": "I feel strong emotions when someone close to me is leaving for a long period of time.", "reverse": false},
+        {"id": "E2", "text": "I worry a lot less than most people do.", "reverse": true},
+        {"id": "E3", "text": "Even in an emergency I wouldn't feel like panicking.", "reverse": true},
+        {"id": "E4", "text": "I need the help of other people when I am having personal problems.", "reverse": false},
+        {"id": "E5", "text": "I feel very anxious in situations where there is some danger involved.", "reverse": false},
+        {"id": "E6", "text": "When I suffer from a painful experience, I need someone to make me feel comfortable.", "reverse": false},
+        {"id": "E7", "text": "I remain calm in situations that would make most other people extremely tense.", "reverse": true},
+        {"id": "E8", "text": "I feel very moved when I see a homeless person.", "reverse": false},
+        {"id": "E9", "text": "I rarely express my emotions openly.", "reverse": true},
+        {"id": "E10", "text": "I sometimes can't help worrying about little things.", "reverse": false}
+      ]
+    },
+    "Extraversion": {
+      "description": "Measures social self-esteem, social boldness, sociability, and liveliness. High scorers feel positively about themselves, enjoy social situations, and feel lively and energetic.",
+      "items": [
+        {"id": "X1", "text": "People see me as somewhat cold and distant.", "reverse": true},
+        {"id": "X2", "text": "People think of me as someone who has a lot of fun.", "reverse": false},
+        {"id": "X3", "text": "On most days, I feel cheerful and optimistic.", "reverse": false},
+        {"id": "X4", "text": "I feel comfortable around people.", "reverse": false},
+        {"id": "X5", "text": "In social situations, I'm usually the one who makes the first move.", "reverse": false},
+        {"id": "X6", "text": "I rarely find it difficult to be upbeat and optimistic.", "reverse": false},
+        {"id": "X7", "text": "I don't talk a lot.", "reverse": true},
+        {"id": "X8", "text": "I am a cheerful, lively person.", "reverse": false},
+        {"id": "X9", "text": "I seldom feel lonely or sad.", "reverse": false},
+        {"id": "X10", "text": "I feel that I am an unpopular person.", "reverse": true}
+      ]
+    },
+    "Agreeableness": {
+      "description": "Measures forgivingness, gentleness, flexibility, and patience. High scorers are willing to compromise, have little temper, and are not judgmental.",
+      "items": [
+        {"id": "A1", "text": "I tend to be lenient in judging other people.", "reverse": false},
+        {"id": "A2", "text": "Most people tend to get angry more quickly than I do.", "reverse": false},
+        {"id": "A3", "text": "People sometimes tell me that I am too critical of others.", "reverse": true},
+        {"id": "A4", "text": "I am usually quite flexible in my opinions when people disagree with me.", "reverse": false},
+        {"id": "A5", "text": "I feel that most people are basically well-intentioned.", "reverse": false},
+        {"id": "A6", "text": "I find it hard to fully forgive others who have done something terrible to a friend of mine.", "reverse": true},
+        {"id": "A7", "text": "If someone treated me badly, I would try to treat that person in just as bad a way.", "reverse": true},
+        {"id": "A8", "text": "I am a fairly patient person.", "reverse": false},
+        {"id": "A9", "text": "When someone does something bad to me, I try to forgive that person quickly.", "reverse": false},
+        {"id": "A10", "text": "People sometimes tell me that I'm too stubborn.", "reverse": true}
+      ]
+    },
+    "Conscientiousness": {
+      "description": "Measures organization, diligence, perfectionism, and prudence. High scorers are well-organized, hard-working, detail-oriented, and careful about decisions.",
+      "items": [
+        {"id": "C1", "text": "I make decisions based on the feeling of the moment rather than on careful deliberation.", "reverse": true},
+        {"id": "C2", "text": "I always try to be accurate in my work, even at the risk of taking more time.", "reverse": false},
+        {"id": "C3", "text": "When working on something, I don't pay much attention to small details.", "reverse": true},
+        {"id": "C4", "text": "I often push myself very hard when trying to achieve a goal.", "reverse": false},
+        {"id": "C5", "text": "I plan ahead and organize my activities.", "reverse": false},
+        {"id": "C6", "text": "I make a lot of mistakes because I don't think before I act.", "reverse": true},
+        {"id": "C7", "text": "I am an extremely productive person.", "reverse": false},
+        {"id": "C8", "text": "I always keep my promises, even if it would be convenient for me to break them.", "reverse": false},
+        {"id": "C9", "text": "I often spend so much time on one thing that I neglect other important things I need to do.", "reverse": true},
+        {"id": "C10", "text": "I like to have all my possessions organized and in order.", "reverse": false}
+      ]
+    },
+    "Openness to Experience": {
+      "description": "Measures aesthetic appreciation, inquisitiveness, creativity, and unconventionality. High scorers are imaginative, curious about art and science, and open to new ideas.",
+      "items": [
+        {"id": "O1", "text": "I think that paying attention to radical ideas is a waste of time.", "reverse": true},
+        {"id": "O2", "text": "I enjoy looking at maps of places I have never been.", "reverse": false},
+        {"id": "O3", "text": "I would enjoy creating a work of art, such as a novel, a song, or a painting.", "reverse": false},
+        {"id": "O4", "text": "I think of myself as someone who is interested in art, music, and literature.", "reverse": false},
+        {"id": "O5", "text": "I don't think of myself as the artistic or creative type.", "reverse": true},
+        {"id": "O6", "text": "I have a wild imagination.", "reverse": false},
+        {"id": "O7", "text": "I find it boring to discuss philosophy.", "reverse": true},
+        {"id": "O8", "text": "I am interested in learning about the history and politics of other countries.", "reverse": false},
+        {"id": "O9", "text": "I would find the life of an academic researcher appealing.", "reverse": false},
+        {"id": "O10", "text": "I find it difficult to keep my mind focused on something for a long period of time.", "reverse": true}
+      ]
+    }
+  }
+}

@@ -1,0 +1,139 @@
+## config.yaml
+## Central configuration for "From Personas to Talks" paper implementation.
+## Every setting in the project lives here. No hardcoded values anywhere else.
+
+llm:
+  primary_provider: "gemini"            # "gemini" or "anthropic"
+  fallback_provider: "anthropic"
+  gemini_model: "gemini-2.0-flash"
+  anthropic_model: "claude-sonnet-4-6"
+  temperature_extraction: 0.0           # All extraction and scoring tasks
+  temperature_synthesis: 0.7            # Dialogue synthesis only
+  max_retries: 3
+  retry_delay_seconds: 2
+
+datasets:
+  esconv:
+    hf_name: "thu-coai/esconv"
+    split: "train"
+  cams:
+    hf_name: "shivam-v17/CAMS"
+    split: "train"
+  dreaddit:
+    hf_name: "tracie/dreaddit"
+    split: "train"
+  persona_hub:
+    hf_name: "proj-persona/PersonaHub"
+    split: "train"
+    sample_size: 1000                   # RQ2: sample 1000 personas
+
+paths:
+  hexaco_questions: "data/hexaco_questions.json"
+  csi_questions: "data/csi_questions.json"
+  outputs:
+    personas: "outputs/personas"
+    scores: "outputs/scores"
+    dialogues: "outputs/dialogues"
+    profiles: "outputs/profiles"
+  intermediate:
+    extracted_personas: "outputs/personas/extracted_personas.json"
+    filtered_personas: "outputs/personas/filtered_personas.json"
+    persona_hub_expanded: "outputs/personas/persona_hub_expanded.json"
+    hexaco_descriptions: "outputs/scores/hexaco_descriptions.json"
+    csi_descriptions: "outputs/scores/csi_descriptions.json"
+    hexaco_scores: "outputs/scores/hexaco_scores.json"
+    csi_scores: "outputs/scores/csi_scores.json"
+    rq1_correlations: "outputs/scores/rq1_correlations.json"
+    rq2_original_hexaco: "outputs/scores/rq2_original_hexaco.json"
+    rq2_original_csi: "outputs/scores/rq2_original_csi.json"
+    rq2_dialogues: "outputs/dialogues/rq2_dialogues.json"
+    rq2_extracted_personas: "outputs/personas/rq2_extracted_personas.json"
+    rq2_extracted_hexaco: "outputs/scores/rq2_extracted_hexaco.json"
+    rq2_extracted_csi: "outputs/scores/rq2_extracted_csi.json"
+    rq3_dialogues_with_persona: "outputs/dialogues/rq3_with_persona.json"
+    rq3_dialogues_without_persona: "outputs/dialogues/rq3_without_persona.json"
+    rq3_strategies_with: "outputs/scores/rq3_strategies_with.json"
+    rq3_strategies_without: "outputs/scores/rq3_strategies_without.json"
+    rq3_analysis: "outputs/scores/rq3_analysis.json"
+
+hexaco:
+  dimensions:
+    - name: "Honesty-Humility"
+      short: "H"
+      csi_pair: "Impression Manipulativeness"
+    - name: "Emotionality"
+      short: "E"
+      csi_pair: "Emotionality"
+    - name: "Extraversion"
+      short: "X"
+      csi_pair: "Expressiveness"
+    - name: "Agreeableness"
+      short: "A"
+      csi_pair: "Verbal Aggressiveness"
+    - name: "Conscientiousness"
+      short: "C"
+      csi_pair: "Preciseness"
+    - name: "Openness to Experience"
+      short: "O"
+      csi_pair: "Questioningness"
+  description: >
+    The HEXACO personality inventory measures six broad dimensions of personality:
+    Honesty-Humility (sincerity, fairness, greed-avoidance, modesty),
+    Emotionality (fearfulness, anxiety, dependence, sentimentality),
+    Extraversion (social self-esteem, social boldness, sociability, liveliness),
+    Agreeableness (forgivingness, gentleness, flexibility, patience),
+    Conscientiousness (organization, diligence, perfectionism, prudence),
+    and Openness to Experience (aesthetic appreciation, inquisitiveness, creativity, unconventionality).
+
+csi:
+  dimensions:
+    - name: "Impression Manipulativeness"
+      hexaco_pair: "Honesty-Humility"
+    - name: "Emotionality"
+      hexaco_pair: "Emotionality"
+    - name: "Expressiveness"
+      hexaco_pair: "Extraversion"
+    - name: "Verbal Aggressiveness"
+      hexaco_pair: "Agreeableness"
+    - name: "Preciseness"
+      hexaco_pair: "Conscientiousness"
+    - name: "Questioningness"
+      hexaco_pair: "Openness to Experience"
+  description: >
+    The Communication Style Inventory (CSI) measures six dimensions of communication style:
+    Impression Manipulativeness (tendency to manage how one is perceived),
+    Emotionality (expression of emotions in communication),
+    Expressiveness (openness and directness in self-expression),
+    Verbal Aggressiveness (forcefulness and confrontation in communication),
+    Preciseness (accuracy, thoroughness, and organization in communication),
+    and Questioningness (tendency to question assumptions and probe for information).
+
+esconv:
+  strategies:
+    - name: "Question"
+      definition: "The supporter asks open or closed questions to gather more information about the seeker's situation, thoughts, or feelings."
+    - name: "Restatement or Paraphrasing"
+      definition: "The supporter restates or paraphrases what the seeker has said to demonstrate understanding and encourage elaboration."
+    - name: "Reflection of Feelings"
+      definition: "The supporter names, mirrors, or validates the seeker's emotional experience to show empathy."
+    - name: "Self-disclosure"
+      definition: "The supporter shares their own personal experiences, feelings, or opinions to build rapport and reduce the seeker's sense of isolation."
+    - name: "Affirmation and Reassurance"
+      definition: "The supporter affirms the seeker's strengths, worth, or capabilities and offers reassurance about the situation."
+    - name: "Providing Suggestions"
+      definition: "The supporter offers concrete advice, recommendations, or action steps to help the seeker address their problem."
+    - name: "Information"
+      definition: "The supporter provides factual information, resources, or explanations relevant to the seeker's situation."
+    - name: "Others"
+      definition: "Any supporter response that does not fall into the seven categories above, such as greetings, small talk, or closing remarks."
+
+rq1:
+  dataset: "esconv"                     # Dataset for RQ1 persona extraction
+  max_dialogues: 200                    # Cap for cost control; set to null for full dataset
+
+rq2:
+  persona_hub_sample: 1000             # Number of PersonaHub personas to use
+  max_dialogues: 200                    # Cap for RQ2 dialogue synthesis
+
+rq3:
+  esconv_sample: 100                    # Number of ESConv dialogues for RQ3

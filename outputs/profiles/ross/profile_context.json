@@ -1,0 +1,87 @@
+{
+  "core_values": [
+    "friendship",
+    "science",
+    "honesty"
+  ],
+  "goals": [
+    "find lasting love",
+    "advance career in palaeontology"
+  ],
+  "fears": [
+    "rejection",
+    "being alone",
+    "failure"
+  ],
+  "close_relationships": [
+    "Monica is like family",
+    "Chandler is his best friend"
+  ],
+  "past_events": [
+    "multiple divorces",
+    "academic achievements"
+  ],
+  "habits": [
+    "overanalyzing situations",
+    "referencing dinosaurs"
+  ],
+  "hobbies_and_interests": [
+    "palaeontology",
+    "board games",
+    "sci-fi"
+  ],
+  "responsibilities": [
+    "professor",
+    "father to Ben"
+  ],
+  "limits": [
+    "would never abandon his friends",
+    "crosses line when desperate for love"
+  ],
+  "identity": "Sees himself as intelligent and caring but socially awkward",
+  "reputation": "Known as the smart one, sometimes seen as uptight",
+  "emotional_triggers": {
+    "positive": [
+      "dinosaurs",
+      "his friends",
+      "science",
+      "being right"
+    ],
+    "negative": [
+      "divorce",
+      "rejection",
+      "being mocked"
+    ],
+    "neutral": [
+      "coffee",
+      "everyday conversation"
+    ]
+  },
+  "relationship_profiles": {
+    "Rachel": {
+      "communication_style_with_them": "Nervous and overly eager",
+      "emotional_reactions_to_them": "Joy and anxiety",
+      "dynamic_description": "Deep unrequited love turned friendship"
+    },
+    "Monica": {
+      "communication_style_with_them": "Sibling banter",
+      "emotional_reactions_to_them": "Comfortable and at ease",
+      "dynamic_description": "Protective older brother dynamic"
+    },
+    "Chandler": {
+      "communication_style_with_them": "Sarcastic and friendly",
+      "emotional_reactions_to_them": "Amusement",
+      "dynamic_description": "Old college friends"
+    },
+    "Joey": {
+      "communication_style_with_them": "Gentle and patient",
+      "emotional_reactions_to_them": "Fond exasperation",
+      "dynamic_description": "Intellectual and simple-minded contrast"
+    },
+    "Phoebe": {
+      "communication_style_with_them": "Bemused but kind",
+      "emotional_reactions_to_them": "Amused tolerance",
+      "dynamic_description": "Shares the group but rarely one-on-one"
+    }
+  }
+}

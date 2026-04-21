@@ -60,15 +60,17 @@ def run_rq1(
     llm_client: LLMClient,
     data_loader: DataLoader,
 ) -> dict:
-    """Run RQ1: HEXACO-CSI correlation from ESConv-extracted personas.
+    """Run RQ1: HEXACO-CSI correlation from extracted personas across three datasets.
 
-    Pipeline:
-      1. Load ESConv dialogues.
-      2. Extract supporter persona cards (Figure 11).
+    The paper runs RQ1 on ESConv, CAMS, and Dreaddit. For each dataset:
+      1. Load dialogues / posts.
+      2. Extract persona cards (Figure 11).
       3. Filter personas for quality (Figure 14).
       4. Generate HEXACO and CSI behavioral descriptions (Figure 12).
       5. Score each persona on HEXACO-60 and CSI (Figure 13).
       6. Compute Pearson correlation matrix.
+
+    Results are computed and saved per dataset and also pooled together.
 
     Args:
         config: Parsed config dict.
@@ -76,32 +78,170 @@ def run_rq1(
         data_loader: Shared DataLoader.
 
     Returns:
-        Correlation analysis result dict.
+        Dict mapping dataset name -> correlation result dict, plus "pooled" key.
     """
-    logger.info("=== RQ1: HEXACO-CSI trait correlation ===")
+    logger.info("=== RQ1: HEXACO-CSI trait correlation (ESConv + CAMS + Dreaddit) ===")
 
-    max_dialogues = config["rq1"].get("max_dialogues")
-    dialogues = data_loader.load_esconv(max_samples=max_dialogues)
+    rq1_datasets = config["rq1"].get("datasets", ["esconv", "cams", "dreaddit"])
+    max_per_dataset = config["rq1"].get("max_dialogues_per_dataset", 200)
 
-    extractor = PersonaExtractor(config, llm_client, data_loader)
-    raw_personas = extractor.extract_personas(dialogues)
-
-    persona_filter = PersonaFilter(config, llm_client)
-    filtered_personas = persona_filter.filter_personas(raw_personas, dialogues)
-
-    describer = TraitDescriber(config, llm_client)
-    hexaco_descriptions = describer.describe_hexaco(filtered_personas)
-    csi_descriptions = describer.describe_csi(filtered_personas)
-
-    scorer = InventoryScorer(config, llm_client)
-    hexaco_scores = scorer.score_hexaco(hexaco_descriptions)
-    csi_scores = scorer.score_csi(csi_descriptions)
-
+    base_paths = dict(config["paths"]["intermediate"])
     analyzer = CorrelationAnalyzer(config)
-    result = analyzer.analyze(hexaco_scores, csi_scores)
+    describer = TraitDescriber(config, llm_client)
+    scorer = InventoryScorer(config, llm_client)
 
-    logger.info("RQ1 complete. Results saved to '%s'.", config["paths"]["intermediate"]["rq1_correlations"])
+    all_hexaco_scores: list[dict] = []
+    all_csi_scores: list[dict] = []
+    per_dataset_results: dict = {}
+
+    for dataset_name in rq1_datasets:
+        logger.info("--- RQ1 dataset: %s ---", dataset_name)
+
+        # Load dataset. Wrap in try/except so that unavailable HuggingFace
+        # datasets (e.g. CAMS or Dreaddit when not publicly accessible) cause
+        # that dataset to be skipped rather than aborting the entire pipeline.
+        try:
+            if dataset_name == "esconv":
+                samples = data_loader.load_esconv(max_samples=max_per_dataset)
+            elif dataset_name == "cams":
+                samples = _cams_to_dialogue_format(
+                    data_loader.load_cams(max_samples=max_per_dataset)
+                )
+            elif dataset_name == "dreaddit":
+                samples = _dreaddit_to_dialogue_format(
+                    data_loader.load_dreaddit(max_samples=max_per_dataset)
+                )
+            else:
+                logger.warning("Unknown dataset '%s'. Skipping.", dataset_name)
+                continue
+        except Exception as exc:
+            logger.warning(
+                "Failed to load dataset '%s': %s. Skipping.", dataset_name, exc
+            )
+            continue
+
+        # Use dataset-scoped output paths to avoid cross-contamination.
+        ds_extracted_path = base_paths["extracted_personas"].replace(
+            ".json", f"_{dataset_name}.json"
+        )
+        ds_filtered_path = base_paths["filtered_personas"].replace(
+            ".json", f"_{dataset_name}.json"
+        )
+        ds_hexaco_desc_path = base_paths["hexaco_descriptions"].replace(
+            ".json", f"_{dataset_name}.json"
+        )
+        ds_csi_desc_path = base_paths["csi_descriptions"].replace(
+            ".json", f"_{dataset_name}.json"
+        )
+        ds_hexaco_scores_path = base_paths["hexaco_scores"].replace(
+            ".json", f"_{dataset_name}.json"
+        )
+        ds_csi_scores_path = base_paths["csi_scores"].replace(
+            ".json", f"_{dataset_name}.json"
+        )
+        ds_correlation_path = base_paths["rq1_correlations"].replace(
+            ".json", f"_{dataset_name}.json"
+        )
+
+        # Temporarily patch config paths for scoped output.
+        config["paths"]["intermediate"]["extracted_personas"] = ds_extracted_path
+        config["paths"]["intermediate"]["filtered_personas"] = ds_filtered_path
+        config["paths"]["intermediate"]["hexaco_descriptions"] = ds_hexaco_desc_path
+        config["paths"]["intermediate"]["csi_descriptions"] = ds_csi_desc_path
+        config["paths"]["intermediate"]["hexaco_scores"] = ds_hexaco_scores_path
+        config["paths"]["intermediate"]["csi_scores"] = ds_csi_scores_path
+
+        extractor = PersonaExtractor(config, llm_client, data_loader)
+        raw_personas = extractor.extract_personas(samples)
+
+        persona_filter = PersonaFilter(config, llm_client)
+        skip_filter = config["rq1"].get("skip_persona_filter", False)
+        filtered_personas = persona_filter.filter_personas(raw_personas, samples, skip_filter=skip_filter)
+
+        hexaco_descriptions = describer.describe_hexaco(filtered_personas)
+        csi_descriptions = describer.describe_csi(filtered_personas)
+
+        hexaco_scores = scorer.score_hexaco(hexaco_descriptions)
+        csi_scores = scorer.score_csi(csi_descriptions)
+
+        # Tag persona_ids with dataset prefix to avoid collision in pooled analysis.
+        for s in hexaco_scores:
+            s["persona_id"] = f"{dataset_name}_{s['persona_id']}"
+        for s in csi_scores:
+            s["persona_id"] = f"{dataset_name}_{s['persona_id']}"
+
+        all_hexaco_scores.extend(hexaco_scores)
+        all_csi_scores.extend(csi_scores)
+
+        ds_result = analyzer.analyze(
+            hexaco_scores, csi_scores, output_path=ds_correlation_path
+        )
+        per_dataset_results[dataset_name] = ds_result
+
+    # Restore canonical paths.
+    config["paths"]["intermediate"].update(base_paths)
+
+    # Pooled correlation across all three datasets.
+    pooled_result: dict = {}
+    if all_hexaco_scores and all_csi_scores:
+        pooled_result = analyzer.analyze(
+            all_hexaco_scores,
+            all_csi_scores,
+            output_path=base_paths["rq1_correlations"],
+        )
+
+    result = {"per_dataset": per_dataset_results, "pooled": pooled_result}
+    logger.info("RQ1 complete.")
     return result
+
+
+def _cams_to_dialogue_format(cams_samples: list[dict]) -> list[dict]:
+    """Convert CAMS samples to the normalized dialogue format for persona extraction.
+
+    CAMS samples are Reddit posts, not dialogues. We model each post as a single
+    Seeker turn with no Supporter response.
+
+    Args:
+        cams_samples: Normalized CAMS sample dicts from DataLoader.
+
+    Returns:
+        List of minimal dialogue dicts compatible with PersonaExtractor.
+    """
+    return [
+        {
+            "dialogue_id": s["sample_id"],
+            "turns": [{"role": "Seeker", "text": s["text"], "strategy": None}],
+            "seeker_problem": s["text"],
+            "emotion_type": "",
+            "problem_type": s.get("label", ""),
+            "source": "cams",
+        }
+        for s in cams_samples
+    ]
+
+
+def _dreaddit_to_dialogue_format(dreaddit_samples: list[dict]) -> list[dict]:
+    """Convert Dreaddit samples to the normalized dialogue format for persona extraction.
+
+    Dreaddit samples are Reddit posts. We model each post as a single Seeker turn.
+
+    Args:
+        dreaddit_samples: Normalized Dreaddit sample dicts from DataLoader.
+
+    Returns:
+        List of minimal dialogue dicts compatible with PersonaExtractor.
+    """
+    return [
+        {
+            "dialogue_id": s["sample_id"],
+            "turns": [{"role": "Seeker", "text": s["text"], "strategy": None}],
+            "seeker_problem": s["text"],
+            "emotion_type": "stressed" if s.get("label") == 1 else "not stressed",
+            "problem_type": s.get("subreddit", ""),
+            "source": "dreaddit",
+        }
+        for s in dreaddit_samples
+    ]
 
 
 def run_rq2(
@@ -113,12 +253,12 @@ def run_rq2(
 
     Pipeline:
       1. Load and expand 1000 PersonaHub personas (Figure 15).
-      2. Score original personas on HEXACO and CSI.
-      3. Load ESConv dialogues as conversation history.
-      4. Synthesize follow-up dialogues using persona traits (Figure 16).
-      5. Extract supporter personas from generated dialogues (Figure 11).
-      6. Score extracted personas on HEXACO and CSI.
-      7. Compare original vs. extracted dimension scores.
+      2. Score original personas on HEXACO and CSI (Figure 12 + 13).
+      3. Synthesize fresh ESC dialogues using Figure 17 (socio-demographic
+         description only — no ESConv history, no injected scores).
+      4. Extract personas from generated dialogues (Figure 11).
+      5. Score extracted personas on HEXACO and CSI.
+      6. Compare original vs. extracted dimension scores (mean absolute diff).
 
     Args:
         config: Parsed config dict.
@@ -126,84 +266,74 @@ def run_rq2(
         data_loader: Shared DataLoader.
 
     Returns:
-        Dict with original and extracted scores and comparison summary.
+        Dict with per-dimension MAD and overall MAD for HEXACO and CSI.
     """
     logger.info("=== RQ2: Trait consistency before/after dialogue generation ===")
 
-    # Step 1: expand PersonaHub personas.
+    # Preserve canonical score paths so we can restore them after RQ2 patching.
+    orig_hexaco_path = config["paths"]["intermediate"]["hexaco_scores"]
+    orig_csi_path = config["paths"]["intermediate"]["csi_scores"]
+
+    # Step 1: expand PersonaHub personas with socio-demographic descriptions.
     hub_loader = PersonaHubLoader(config, llm_client, data_loader)
     expanded_personas = hub_loader.load_and_expand()
 
-    # Step 2: score originals.
+    # Step 2: score original personas (scoped paths to avoid colliding with RQ1).
     describer = TraitDescriber(config, llm_client)
-
-    hexaco_desc_orig_path = config["paths"]["intermediate"]["rq2_original_hexaco"]
-    csi_desc_orig_path = config["paths"]["intermediate"]["rq2_original_csi"]
+    scorer = InventoryScorer(config, llm_client)
 
     hexaco_desc_orig = _describe_with_custom_paths(
-        describer, expanded_personas, "hexaco", hexaco_desc_orig_path
+        describer, expanded_personas, "hexaco",
+        config["paths"]["intermediate"]["rq2_original_hexaco"],
     )
     csi_desc_orig = _describe_with_custom_paths(
-        describer, expanded_personas, "csi", csi_desc_orig_path
+        describer, expanded_personas, "csi",
+        config["paths"]["intermediate"]["rq2_original_csi"],
     )
 
-    scorer = InventoryScorer(config, llm_client)
+    config["paths"]["intermediate"]["hexaco_scores"] = (
+        config["paths"]["intermediate"]["rq2_original_hexaco"].replace(".json", "_scores.json")
+    )
+    config["paths"]["intermediate"]["csi_scores"] = (
+        config["paths"]["intermediate"]["rq2_original_csi"].replace(".json", "_scores.json")
+    )
     hexaco_scores_orig = scorer.score_hexaco(hexaco_desc_orig)
     csi_scores_orig = scorer.score_csi(csi_desc_orig)
-
-    # Temporarily swap output paths to avoid overwriting RQ1 scores.
-    orig_hexaco_path = config["paths"]["intermediate"]["hexaco_scores"]
-    orig_csi_path = config["paths"]["intermediate"]["csi_scores"]
-    config["paths"]["intermediate"]["hexaco_scores"] = config["paths"]["intermediate"]["rq2_original_hexaco"].replace(".json", "_scores.json")
-    config["paths"]["intermediate"]["csi_scores"] = config["paths"]["intermediate"]["rq2_original_csi"].replace(".json", "_scores.json")
-
-    hexaco_scores_orig = scorer.score_hexaco(hexaco_desc_orig)
-    csi_scores_orig = scorer.score_csi(csi_desc_orig)
-
     config["paths"]["intermediate"]["hexaco_scores"] = orig_hexaco_path
     config["paths"]["intermediate"]["csi_scores"] = orig_csi_path
 
-    # Step 3: load ESConv as history.
-    max_dialogues = config["rq2"].get("max_dialogues")
-    base_dialogues = data_loader.load_esconv(max_samples=max_dialogues)
-
-    # Step 4: synthesize dialogues.
+    # Step 3: synthesize ESC dialogues using Figure 17 (persona description only).
     synthesizer = DialogueSynthesizer(config, llm_client, data_loader)
-    synthesized = synthesizer.synthesize_rq2_dialogues(
-        personas=expanded_personas,
-        hexaco_scores=hexaco_scores_orig,
-        csi_scores=csi_scores_orig,
-        base_dialogues=base_dialogues,
-    )
+    synthesized = synthesizer.synthesize_rq2_dialogues(personas=expanded_personas)
 
-    # Step 5: extract personas from generated dialogues.
-    # Convert synthesized dialogue strings back to the dialogue dict format.
+    # Step 4: extract personas from generated dialogues.
     synthetic_dialogue_dicts = _synthesized_to_dialogue_dicts(synthesized)
     extractor = PersonaExtractor(config, llm_client, data_loader)
-    # Override output path for extracted rq2 personas.
     extractor._output_path = config["paths"]["intermediate"]["rq2_extracted_personas"]
     extracted_personas = extractor.extract_personas(synthetic_dialogue_dicts)
 
-    # Step 6: score extracted personas.
+    # Step 5: score extracted personas (scoped paths).
     hexaco_desc_ext = _describe_with_custom_paths(
         describer, extracted_personas, "hexaco",
-        config["paths"]["intermediate"]["rq2_extracted_hexaco"]
+        config["paths"]["intermediate"]["rq2_extracted_hexaco"],
     )
     csi_desc_ext = _describe_with_custom_paths(
         describer, extracted_personas, "csi",
-        config["paths"]["intermediate"]["rq2_extracted_csi"]
+        config["paths"]["intermediate"]["rq2_extracted_csi"],
     )
 
-    config["paths"]["intermediate"]["hexaco_scores"] = config["paths"]["intermediate"]["rq2_extracted_hexaco"].replace(".json", "_scores.json")
-    config["paths"]["intermediate"]["csi_scores"] = config["paths"]["intermediate"]["rq2_extracted_csi"].replace(".json", "_scores.json")
-
+    config["paths"]["intermediate"]["hexaco_scores"] = (
+        config["paths"]["intermediate"]["rq2_extracted_hexaco"].replace(".json", "_scores.json")
+    )
+    config["paths"]["intermediate"]["csi_scores"] = (
+        config["paths"]["intermediate"]["rq2_extracted_csi"].replace(".json", "_scores.json")
+    )
     hexaco_scores_ext = scorer.score_hexaco(hexaco_desc_ext)
     csi_scores_ext = scorer.score_csi(csi_desc_ext)
-
     config["paths"]["intermediate"]["hexaco_scores"] = orig_hexaco_path
     config["paths"]["intermediate"]["csi_scores"] = orig_csi_path
 
-    # Step 7: compare original vs extracted.
+    # Step 6: compare original vs extracted scores.
     comparison = _compare_scores(hexaco_scores_orig, hexaco_scores_ext, "HEXACO")
     comparison.update(_compare_scores(csi_scores_orig, csi_scores_ext, "CSI"))
 

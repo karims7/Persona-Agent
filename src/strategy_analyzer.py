@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 _ALL_STRATEGIES = [
     "Question",
     "Restatement or Paraphrasing",
-    "Reflection of Feelings",
+    "Reflection of feelings",
     "Self-disclosure",
     "Affirmation and Reassurance",
     "Providing Suggestions",

@@ -59,36 +59,39 @@ class DataLoader:
     def _normalize_esconv_sample(self, idx: int, sample: dict) -> dict:
         """Convert a single ESConv sample to the normalized format.
 
+        The thu-coai/esconv dataset stores each example as a JSON string in a
+        single "text" field. The inner JSON has keys: emotion_type, problem_type,
+        situation, dialog (list of {text, speaker, strategy?}).
+        Speaker values are "usr" (Seeker) and "sys" (Supporter).
+
         Args:
-            idx: Integer index used as fallback dialogue_id.
-            sample: Raw HuggingFace sample dict.
+            idx: Integer index used as dialogue_id (dataset has no conv_id).
+            sample: Raw HuggingFace sample dict with a "text" key.
 
         Returns:
             Normalized dialogue dict.
         """
-        dialogue_id = str(sample.get("conv_id", idx))
+        # The entire conversation is JSON-encoded in the "text" field.
+        raw_text = sample.get("text", "")
+        try:
+            inner = json.loads(raw_text)
+        except (json.JSONDecodeError, TypeError):
+            logger.warning("ESConv sample %d: failed to parse 'text' as JSON.", idx)
+            inner = {}
+
+        dialogue_id = str(idx)
         turns: list[dict] = []
 
-        dialog_field = sample.get("dialog", sample.get("conversation", []))
-
-        if isinstance(dialog_field, str):
-            try:
-                dialog_field = json.loads(dialog_field)
-            except (json.JSONDecodeError, TypeError):
-                dialog_field = []
-
-        for turn in dialog_field:
-            role_raw = turn.get("speaker", turn.get("role", "Unknown"))
-            role = "Seeker" if str(role_raw).lower() in ("seeker", "user") else "Supporter"
-            text = str(turn.get("text", turn.get("content", ""))).strip()
+        for turn in inner.get("dialog", []):
+            speaker = str(turn.get("speaker", "")).lower()
+            role = "Seeker" if speaker == "usr" else "Supporter"
+            text = str(turn.get("text", "")).strip()
             strategy = turn.get("strategy", None)
             turns.append({"role": role, "text": text, "strategy": strategy})
 
-        seeker_problem = str(
-            sample.get("situation", sample.get("problem", sample.get("context", "")))
-        ).strip()
-        emotion_type = str(sample.get("emotion_type", "")).strip()
-        problem_type = str(sample.get("problem_type", "")).strip()
+        seeker_problem = str(inner.get("situation", "")).strip()
+        emotion_type = str(inner.get("emotion_type", "")).strip()
+        problem_type = str(inner.get("problem_type", "")).strip()
 
         return {
             "dialogue_id": dialogue_id,
@@ -106,6 +109,10 @@ class DataLoader:
           - sample_id: str
           - text: str
           - label: str
+
+        Note: The CAMS dataset (shivam-v17/CAMS) may not be publicly accessible on
+        the HuggingFace Hub at all times. If load fails, the RQ1 pipeline will skip
+        this dataset automatically via the try/except in main.py's run_rq1.
 
         Args:
             max_samples: Cap on number of samples. None = all.
@@ -139,6 +146,10 @@ class DataLoader:
           - text: str
           - label: int (0 = not stressed, 1 = stressed)
           - subreddit: str
+
+        Note: The Dreaddit dataset (tracie/dreaddit) may not be publicly accessible on
+        the HuggingFace Hub at all times. If load fails, the RQ1 pipeline will skip
+        this dataset automatically via the try/except in main.py's run_rq1.
 
         Args:
             max_samples: Cap on number of samples. None = all.

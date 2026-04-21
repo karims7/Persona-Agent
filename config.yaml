@@ -109,27 +109,29 @@ csi:
     and Questioningness (tendency to question assumptions and probe for information).
 
 esconv:
+  # Strategy definitions from the paper's Appendix G (ESConv, Liu et al. 2021)
   strategies:
     - name: "Question"
-      definition: "The supporter asks open or closed questions to gather more information about the seeker's situation, thoughts, or feelings."
+      definition: "Asking open-ended or specific questions related to the problem to help the seeker articulate their issues and provide clarity."
     - name: "Restatement or Paraphrasing"
-      definition: "The supporter restates or paraphrases what the seeker has said to demonstrate understanding and encourage elaboration."
-    - name: "Reflection of Feelings"
-      definition: "The supporter names, mirrors, or validates the seeker's emotional experience to show empathy."
+      definition: "Concisely rephrasing the seeker's statements to help them better understand their situation."
+    - name: "Reflection of feelings"
+      definition: "Expressing and clarifying the seeker's emotions to acknowledge their feelings."
     - name: "Self-disclosure"
-      definition: "The supporter shares their own personal experiences, feelings, or opinions to build rapport and reduce the seeker's sense of isolation."
+      definition: "Sharing similar experiences or feelings to show understanding and reduce the seeker's sense of isolation."
     - name: "Affirmation and Reassurance"
-      definition: "The supporter affirms the seeker's strengths, worth, or capabilities and offers reassurance about the situation."
+      definition: "Affirming the seeker's strengths, worth, or capabilities and offering reassurance to reduce distress."
     - name: "Providing Suggestions"
-      definition: "The supporter offers concrete advice, recommendations, or action steps to help the seeker address their problem."
+      definition: "Providing concrete suggestions or advice to help the seeker address their problem or improve their situation."
     - name: "Information"
-      definition: "The supporter provides factual information, resources, or explanations relevant to the seeker's situation."
+      definition: "Providing useful information or facts relevant to the seeker's problem or situation."
     - name: "Others"
-      definition: "Any supporter response that does not fall into the seven categories above, such as greetings, small talk, or closing remarks."
+      definition: "Any supporter response that does not fit the seven categories above, such as greetings, acknowledgments, or closing remarks."
 
 rq1:
-  dataset: "esconv"                     # Dataset for RQ1 persona extraction
-  max_dialogues: 200                    # Cap for cost control; set to null for full dataset
+  # RQ1 runs on all three datasets as in the paper (ESConv, CAMS, Dreaddit)
+  datasets: ["esconv", "cams", "dreaddit"]
+  max_dialogues_per_dataset: 200        # Cap per dataset for cost control; set to null for full
 
 rq2:
   persona_hub_sample: 1000             # Number of PersonaHub personas to use
@@ -137,3 +139,15 @@ rq2:
 
 rq3:
   esconv_sample: 100                    # Number of ESConv dialogues for RQ3
+
+meld:
+  dataset: "declare-lab/meld"
+  local_train_path: "data/train_sent_emo.csv"
+  local_test_path: "data/test_sent_emo.csv"
+  characters: ["Ross", "Rachel", "Monica", "Chandler", "Joey", "Phoebe"]
+  default_character: "Ross"
+  profile_split: "train"
+  eval_split: "test"
+  prediction_context_turns: 5
+  emotion_labels: ["neutral", "surprise", "fear", "sadness", "joy", "disgust", "anger"]
+  batch_size: 20

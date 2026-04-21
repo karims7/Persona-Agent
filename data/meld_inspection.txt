@@ -1,0 +1,74 @@
+=== MELD Dataset Inspection ===
+Source: data/train_sent_emo.csv, data/test_sent_emo.csv
+
+=== COLUMN NAMES ===
+['Sr No.', 'Utterance', 'Speaker', 'Emotion', 'Sentiment', 'Dialogue_ID', 'Utterance_ID', 'Season', 'Episode', 'StartTime', 'EndTime']
+
+=== FIRST 3 ROWS (train) ===
+{'Sr No.': '1', 'Utterance': 'also I was the point person on my company’s transition from the KL-5 to GR-6 system.', 'Speaker': 'Chandler', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '0', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:16,059', 'EndTime': '00:16:21,731'}
+{'Sr No.': '2', 'Utterance': 'You must’ve had your hands full.', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '1', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:21,940', 'EndTime': '00:16:23,442'}
+{'Sr No.': '3', 'Utterance': 'That I did. That I did.', 'Speaker': 'Chandler', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '2', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:23,442', 'EndTime': '00:16:26,389'}
+
+=== ROW COUNTS ===
+Train: 9989
+Test:  2610
+
+=== SPEAKERS IN TRAIN (top 20 by count) ===
+  Joey: 1510
+  Ross: 1458
+  Rachel: 1435
+  Phoebe: 1321
+  Monica: 1299
+  Chandler: 1283
+  Janice: 58
+  Carol: 46
+  Emily: 43
+  Tag: 41
+  Mona: 37
+  Doug: 35
+  All: 33
+  Richard: 31
+  Pete: 30
+  Mark: 30
+  Danny: 27
+  Mr. Treeger: 25
+  Joanna: 25
+  Mr. Geller: 24
+
+=== SPEAKERS IN TEST (top 10 by count) ===
+  Joey: 411
+  Chandler: 379
+  Ross: 373
+  Rachel: 356
+  Monica: 346
+  Phoebe: 291
+  Janice: 31
+  Emily: 16
+  Director: 16
+  Gunther: 13
+
+=== UNIQUE EMOTION LABELS (train) ===
+['anger', 'disgust', 'fear', 'joy', 'neutral', 'sadness', 'surprise']
+
+=== COMPLETE DIALOGUE Dialogue_ID=0 ===
+{'Sr No.': '1', 'Utterance': 'also I was the point person on my company’s transition from the KL-5 to GR-6 system.', 'Speaker': 'Chandler', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '0', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:16,059', 'EndTime': '00:16:21,731'}
+{'Sr No.': '2', 'Utterance': 'You must’ve had your hands full.', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '1', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:21,940', 'EndTime': '00:16:23,442'}
+{'Sr No.': '3', 'Utterance': 'That I did. That I did.', 'Speaker': 'Chandler', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '2', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:23,442', 'EndTime': '00:16:26,389'}
+{'Sr No.': '4', 'Utterance': 'So let’s talk a little bit about your duties.', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '3', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:26,820', 'EndTime': '00:16:29,572'}
+{'Sr No.': '5', 'Utterance': 'My duties?  All right.', 'Speaker': 'Chandler', 'Emotion': 'surprise', 'Sentiment': 'positive', 'Dialogue_ID': '0', 'Utterance_ID': '4', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:34,452', 'EndTime': '00:16:40,917'}
+{'Sr No.': '6', 'Utterance': 'Now you’ll be heading a whole division, so you’ll have a lot of duties.', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '5', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:41,126', 'EndTime': '00:16:44,337'}
+{'Sr No.': '7', 'Utterance': 'I see.', 'Speaker': 'Chandler', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '6', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:48,800', 'EndTime': '00:16:51,886'}
+{'Sr No.': '8', 'Utterance': 'But there’ll be perhaps 30 people under you so you can dump a certain amount on them.', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '7', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:48,800', 'EndTime': '00:16:54,514'}
+{'Sr No.': '9', 'Utterance': 'Good to know.', 'Speaker': 'Chandler', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '8', 'Season': '8', 'Episode': '21', 'StartTime': '00:16:59,477', 'EndTime': '00:17:00,478'}
+{'Sr No.': '10', 'Utterance': 'We can go into detail', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '9', 'Season': '8', 'Episode': '21', 'StartTime': '00:17:00,478', 'EndTime': '00:17:02,719'}
+{'Sr No.': '11', 'Utterance': 'No don’t I beg of you!', 'Speaker': 'Chandler', 'Emotion': 'fear', 'Sentiment': 'negative', 'Dialogue_ID': '0', 'Utterance_ID': '10', 'Season': '8', 'Episode': '21', 'StartTime': '00:17:02,856', 'EndTime': '00:17:04,858'}
+{'Sr No.': '12', 'Utterance': 'All right then, we’ll have a definite answer for you on Monday, but I think I can say with some confidence, you’ll fit in well here.', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '11', 'Season': '8', 'Episode': '21', 'StartTime': '00:17:05,025', 'EndTime': '00:17:13,324'}
+{'Sr No.': '13', 'Utterance': 'Really?!', 'Speaker': 'Chandler', 'Emotion': 'surprise', 'Sentiment': 'positive', 'Dialogue_ID': '0', 'Utterance_ID': '12', 'Season': '8', 'Episode': '21', 'StartTime': '00:17:13,491', 'EndTime': '00:17:16,536'}
+{'Sr No.': '14', 'Utterance': 'Absolutely.  You can relax', 'Speaker': 'The Interviewer', 'Emotion': 'neutral', 'Sentiment': 'neutral', 'Dialogue_ID': '0', 'Utterance_ID': '13', 'Season': '8', 'Episode': '21', 'StartTime': '00:17:17,579', 'EndTime': '00:17:20,707'}
+
+=== NOTES ===
+- Emotion labels are lowercase strings
+- Speaker field: first name only for main cast (Ross, Rachel, Monica, Chandler, Joey, Phoebe)
+- Dialogue_ID and Utterance_ID are string representations of integers
+- Utterance_ID is 0-indexed within each dialogue
+- No intensity column; intensity is estimated as 3 (neutral) in meld_loader.py

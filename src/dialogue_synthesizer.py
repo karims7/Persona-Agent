@@ -1,9 +1,17 @@
-"""Synthesize follow-up emotional support conversations (RQ2 and RQ3).
+"""Synthesize emotional support conversations for RQ2 and RQ3.
 
-Responsibility: generate follow-up ESC dialogues from ESConv conversation history
-in two modes:
-  - WITH persona traits (Figure 16): injects HEXACO + CSI scores as context.
-  - WITHOUT persona traits (Figure 18): no persona injection.
+Responsibility: generate ESC dialogues in three distinct modes:
+
+  Figure 17 (RQ2): Generate a fresh ESC dialogue from a persona's
+    socio-demographic description alone. No dialogue history. No injected
+    scores. The seeker's persona shapes the conversation topic.
+
+  Figure 16 (RQ3 with persona): Continue an existing ESConv dialogue with
+    HEXACO and CSI scores injected as seeker persona context.
+
+  Figure 18 (RQ3 without persona): Continue an existing ESConv dialogue
+    with no persona context whatsoever.
+
 Uses temperature=0.7 for all synthesis calls (as specified in config).
 Saves results to separate output files for resumability.
 """
@@ -18,7 +26,18 @@ from src.data_loader import DataLoader
 
 logger = logging.getLogger(__name__)
 
-# Figure 16 prompt from the paper (verbatim) — WITH persona traits.
+# Figure 17 prompt from the paper (verbatim) — RQ2: fresh ESC from persona description.
+_FIGURE_17_TEMPLATE = Template(
+    "Simulate a casual emotional support conversation between a Seeker and a "
+    "Supporter. Based on the socio-demographic description of the Seeker, determine "
+    "potential emotional challenges they might face. Make the conversation more like "
+    "a real-life chat and be specific. In each of the Supporter's responses, use one "
+    "of the following 8 strategies: $strategy_definitions. "
+    "The socio-demographic description of the person is below: "
+    "$socio_demographic_description"
+)
+
+# Figure 16 prompt from the paper (verbatim) — RQ3 with persona: continue ESConv + inject scores.
 _FIGURE_16_TEMPLATE = Template(
     "Your task is to review the previous conversation between the Seeker and "
     "Supporter, which focuses on the Seeker's mental or emotional challenges. Based "
@@ -37,7 +56,7 @@ _FIGURE_16_TEMPLATE = Template(
     "Below is the CSI scores: $csi_scores"
 )
 
-# Figure 18 prompt from the paper (verbatim) — WITHOUT persona traits.
+# Figure 18 prompt from the paper (verbatim) — RQ3 without persona: continue ESConv only.
 _FIGURE_18_TEMPLATE = Template(
     "Your task is to review the previous conversation between the Seeker and "
     "Supporter, which focuses on the Seeker's mental or emotional challenges. Based "
@@ -53,7 +72,7 @@ _FIGURE_18_TEMPLATE = Template(
 
 
 class DialogueSynthesizer:
-    """Synthesizes follow-up ESC dialogues with and without persona injection.
+    """Synthesizes ESC dialogues for RQ2 (Figure 17) and RQ3 (Figures 16 and 18).
 
     Args:
         config: The full parsed config.yaml dict.
@@ -74,75 +93,46 @@ class DialogueSynthesizer:
         self._hexaco_description = config["hexaco"]["description"]
         self._csi_description = config["csi"]["description"]
 
-    def synthesize_rq2_dialogues(
-        self,
-        personas: list[dict],
-        hexaco_scores: list[dict],
-        csi_scores: list[dict],
-        base_dialogues: list[dict],
-    ) -> list[dict]:
-        """Generate follow-up dialogues for RQ2 using PersonaHub personas.
+    def synthesize_rq2_dialogues(self, personas: list[dict]) -> list[dict]:
+        """Generate fresh ESC dialogues for RQ2 using Figure 17 (persona description only).
 
-        Uses Figure 16 (WITH persona) for each persona paired with a base ESConv
-        dialogue. Resumes if output file exists.
+        Figure 17 takes each persona's socio-demographic description and generates
+        a full ESC dialogue from scratch — no ESConv history, no injected scores.
+        The seeker's persona shapes the conversation topic and emotional challenge.
+        Resumes if output file exists.
 
         Args:
             personas: Expanded PersonaHub persona dicts (from PersonaHubLoader).
-            hexaco_scores: HEXACO scores for those personas (from InventoryScorer).
-            csi_scores: CSI scores for those personas (from InventoryScorer).
-            base_dialogues: ESConv dialogues used as conversation history.
+                Each must have "persona_id" and "socio_demographic_description".
 
         Returns:
             List of synthesized dialogue dicts, each with:
               - persona_id: str
-              - dialogue_id: str (base ESConv dialogue used)
               - synthesized_dialogue: str (raw LLM output)
-              - condition: "with_persona"
+              - condition: "rq2_figure17"
         """
-        hexaco_lookup = {s["persona_id"]: s for s in hexaco_scores}
-        csi_lookup = {s["persona_id"]: s for s in csi_scores}
-
         existing = self._load_existing(self._rq2_output_path)
-        existing_keys = {(r["persona_id"], r["dialogue_id"]) for r in existing}
+        existing_ids = {r["persona_id"] for r in existing}
 
         results = list(existing)
-
-        # Pair each persona with a base dialogue (round-robin if fewer dialogues).
-        pairs = self._pair_personas_with_dialogues(personas, base_dialogues)
-        pending = [
-            (persona, dialogue)
-            for persona, dialogue in pairs
-            if (persona["persona_id"], dialogue["dialogue_id"]) not in existing_keys
-        ]
+        pending = [p for p in personas if p["persona_id"] not in existing_ids]
 
         logger.info(
-            "DialogueSynthesizer [RQ2]: %d done, %d pending.",
+            "DialogueSynthesizer [RQ2 Figure 17]: %d done, %d pending.",
             len(existing),
             len(pending),
         )
 
-        for persona, dialogue in pending:
+        for persona in pending:
             persona_id = persona["persona_id"]
-            dialogue_id = dialogue["dialogue_id"]
-            hexaco = hexaco_lookup.get(persona_id)
-            csi = csi_lookup.get(persona_id)
-
-            if hexaco is None or csi is None:
-                logger.warning(
-                    "Missing scores for persona_id '%s'. Skipping.", persona_id
-                )
-                continue
-
-            synthesized = self._synthesize_with_persona(
-                dialogue=dialogue,
-                hexaco_scores=hexaco["dimension_scores"],
-                csi_scores=csi["dimension_scores"],
+            socio_desc = persona.get(
+                "socio_demographic_description", persona.get("persona_text", "")
             )
+            synthesized = self._synthesize_rq2_from_persona(socio_desc)
             results.append({
                 "persona_id": persona_id,
-                "dialogue_id": dialogue_id,
                 "synthesized_dialogue": synthesized,
-                "condition": "with_persona",
+                "condition": "rq2_figure17",
             })
             self._save(results, self._rq2_output_path)
 
@@ -270,16 +260,38 @@ class DialogueSynthesizer:
 
         return results
 
+    def _synthesize_rq2_from_persona(self, socio_demographic_description: str) -> str:
+        """Run the Figure 17 prompt for one PersonaHub persona (RQ2).
+
+        Generates a fresh ESC dialogue with no prior history. The seeker's
+        socio-demographic description determines the emotional challenge topic.
+
+        Args:
+            socio_demographic_description: The expanded persona description string.
+
+        Returns:
+            Raw LLM-synthesized ESC dialogue string.
+        """
+        prompt = _FIGURE_17_TEMPLATE.substitute(
+            strategy_definitions=self._strategy_definitions,
+            socio_demographic_description=socio_demographic_description,
+        )
+
+        return self._llm.generate(
+            prompt=prompt,
+            temperature=self._llm.temperature_synthesis,
+        )
+
     def _synthesize_with_persona(
         self,
         dialogue: dict,
         hexaco_scores: dict,
         csi_scores: dict,
     ) -> str:
-        """Run the Figure 16 prompt for one dialogue + persona.
+        """Run the Figure 16 prompt for one ESConv dialogue + injected persona scores (RQ3).
 
         Args:
-            dialogue: Normalized ESConv dialogue dict.
+            dialogue: Normalized ESConv dialogue dict used as conversation history.
             hexaco_scores: Dict of HEXACO dimension name -> score float.
             csi_scores: Dict of CSI dimension name -> score float.
 
@@ -305,10 +317,10 @@ class DialogueSynthesizer:
         )
 
     def _synthesize_without_persona(self, dialogue: dict) -> str:
-        """Run the Figure 18 prompt for one dialogue (no persona context).
+        """Run the Figure 18 prompt for one ESConv dialogue with no persona context (RQ3).
 
         Args:
-            dialogue: Normalized ESConv dialogue dict.
+            dialogue: Normalized ESConv dialogue dict used as conversation history.
 
         Returns:
             Raw LLM-synthesized follow-up dialogue string.
@@ -326,7 +338,7 @@ class DialogueSynthesizer:
         )
 
     def _build_strategy_definitions(self) -> str:
-        """Build a human-readable string of all 8 ESConv strategy definitions from config.
+        """Build a numbered list of all 8 ESConv strategy definitions from config.
 
         Returns:
             Multi-line string listing each strategy name and definition.
@@ -337,26 +349,6 @@ class DialogueSynthesizer:
             for i, s in enumerate(strategies)
         ]
         return "\n".join(lines)
-
-    def _pair_personas_with_dialogues(
-        self, personas: list[dict], dialogues: list[dict]
-    ) -> list[tuple[dict, dict]]:
-        """Pair each persona with a base dialogue (round-robin on dialogues).
-
-        Args:
-            personas: List of persona dicts.
-            dialogues: List of base dialogue dicts.
-
-        Returns:
-            List of (persona, dialogue) tuples.
-        """
-        if not dialogues:
-            return []
-        n_dialogues = len(dialogues)
-        return [
-            (persona, dialogues[i % n_dialogues])
-            for i, persona in enumerate(personas)
-        ]
 
     def _load_existing(self, output_path: str) -> list[dict]:
         """Load previously synthesized dialogues from disk.

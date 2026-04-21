@@ -51,6 +51,7 @@ class PersonaFilter:
         self,
         personas: list[dict],
         dialogues: list[dict],
+        skip_filter: bool = False,
     ) -> list[dict]:
         """Apply Figure 14 quality filter to all personas, resuming if output exists.
 
@@ -58,11 +59,16 @@ class PersonaFilter:
             personas: Extracted persona dicts (from PersonaExtractor).
             dialogues: Original normalized dialogue dicts used to retrieve
                        the seeker's problem description for each persona.
+            skip_filter: If True, return all personas unchanged without any LLM calls.
 
         Returns:
             Filtered list of persona dicts that passed the quality gate.
             Each passing persona gains a "filter_reason" key.
         """
+        if skip_filter:
+            logger.info("PersonaFilter: skip_filter=True, returning all %d personas unfiltered.", len(personas))
+            return list(personas)
+
         existing_filtered = self._load_existing()
         existing_ids = {p["dialogue_id"] for p in existing_filtered}
 

@@ -28,7 +28,7 @@ _CLASSIFICATION_PROMPT_TEMPLATE = (
 _VALID_STRATEGIES = [
     "Question",
     "Restatement or Paraphrasing",
-    "Reflection of Feelings",
+    "Reflection of feelings",
     "Self-disclosure",
     "Affirmation and Reassurance",
     "Providing Suggestions",

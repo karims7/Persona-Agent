@@ -14,6 +14,8 @@ from string import Template
 
 from src.llm_client import LLMClient
 
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 logger = logging.getLogger(__name__)
 
 # Figure 12 prompt from the paper (verbatim).
@@ -49,6 +51,12 @@ class TraitDescriber:
         self._csi_output_path = config["paths"]["intermediate"]["csi_descriptions"]
         self._hexaco_dims = config["hexaco"]["dimensions"]
         self._csi_dims = config["csi"]["dimensions"]
+        self._hexaco_dim_descriptions = self._load_dim_descriptions(
+            config["paths"]["hexaco_questions"]
+        )
+        self._csi_dim_descriptions = self._load_dim_descriptions(
+            config["paths"]["csi_questions"]
+        )
 
     def describe_hexaco(self, personas: list[dict]) -> list[dict]:
         """Generate HEXACO behavioral descriptions for all personas.
@@ -120,7 +128,12 @@ class TraitDescriber:
             len(pending),
         )
 
-        indicator_descriptions = self._format_indicator_descriptions(dimensions)
+        dim_descriptions = (
+            self._hexaco_dim_descriptions
+            if inventory_name == "HEXACO"
+            else self._csi_dim_descriptions
+        )
+        indicator_descriptions = self._format_indicator_descriptions(dimensions, dim_descriptions)
         dimension_keys = json.dumps([d["name"] for d in dimensions])
 
         for persona in pending:
@@ -205,11 +218,15 @@ class TraitDescriber:
             )
             return default
 
-    def _format_indicator_descriptions(self, dimensions: list[dict]) -> str:
+    def _format_indicator_descriptions(
+        self, dimensions: list[dict], dim_descriptions: dict[str, str]
+    ) -> str:
         """Build a readable string of dimension name and description pairs.
 
         Args:
             dimensions: List of dimension dicts from config.
+            dim_descriptions: Dict mapping dimension name -> description string,
+                loaded from the inventory question JSON files.
 
         Returns:
             Multi-line string listing each dimension with its description.
@@ -217,13 +234,28 @@ class TraitDescriber:
         lines = []
         for dim in dimensions:
             name = dim["name"]
-            # Config stores 'description' at the top level of hexaco/csi config,
-            # not per-dimension. Per-dimension description comes from the
-            # inventory question files, but here we use the dimension name
-            # as the indicator label and pull its description from config if present.
-            desc = dim.get("description", f"The {name} dimension.")
+            desc = dim_descriptions.get(name, f"The {name} dimension.")
             lines.append(f"- {name}: {desc}")
         return "\n".join(lines)
+
+    def _load_dim_descriptions(self, questions_path: str) -> dict[str, str]:
+        """Load per-dimension description strings from a question JSON file.
+
+        Args:
+            questions_path: Path to hexaco_questions.json or csi_questions.json.
+                Resolved relative to the project root if not absolute.
+
+        Returns:
+            Dict mapping dimension name -> description string.
+        """
+        if not os.path.isabs(questions_path):
+            questions_path = os.path.join(_PROJECT_ROOT, questions_path)
+        with open(questions_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {
+            dim_name: dim_data.get("description", f"The {dim_name} dimension.")
+            for dim_name, dim_data in data.get("dimensions", {}).items()
+        }
 
     def _get_persona_id(self, persona: dict) -> str:
         """Extract the canonical identifier from a persona dict.

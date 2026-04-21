@@ -81,6 +81,16 @@ class PersonaExtractor:
         for dialogue in pending:
             dialogue_id = dialogue["dialogue_id"]
             dialogue_text = self._loader.dialogue_to_text(dialogue)
+            if not dialogue_text.strip():
+                # Falls back to seeker_problem when turns are empty (e.g. CAMS/Dreaddit
+                # single-post dialogues or ESConv field-name mismatches).
+                dialogue_text = dialogue.get("seeker_problem", "").strip()
+            if not dialogue_text:
+                logger.warning(
+                    "Skipping dialogue_id='%s': no dialogue text or seeker_problem available.",
+                    dialogue_id,
+                )
+                continue
             persona = self._extract_single(dialogue_id, dialogue_text)
             personas.append(persona)
             self._save(personas)
@@ -97,7 +107,7 @@ class PersonaExtractor:
         Returns:
             Parsed persona dict with dialogue_id attached.
         """
-        prompt = _FIGURE_11_TEMPLATE.substitute(dialogue=dialogue_text)
+        prompt = _FIGURE_11_TEMPLATE.safe_substitute(dialogue=dialogue_text)
         prompt = prompt + _JSON_INSTRUCTION
 
         raw_response = self._llm.generate(
